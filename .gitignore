@@ -1,0 +1,23 @@
+# Python
+venv/
+__pycache__/
+*.pyc
+*.pyo
+.Python
+*.egg-info/
+dist/
+build/
+
+# Environment
+.env
+.env.*
+
+# ETL raw outputs (large generated files, re-created by pipeline)
+etl/raw/
+
+# macOS
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
