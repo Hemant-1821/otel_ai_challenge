@@ -10,9 +10,11 @@ description: |
 
 ## Tool to call
 
-`get_block_vs_transient_mix(stay_month)` — returns the block/transient split,
-`top_companies` (top 3 by revenue with NULL company mapped to 'Transient'), and
-`top3_company_revenue_share` (combined share of month total revenue).
+`get_block_vs_transient_mix(stay_month, top_n_companies=3)` — returns the
+block/transient split, `top_companies` (top N by revenue with NULL company mapped
+to 'Transient'), and `top_companies_revenue_share` (combined share of month total
+revenue). For a large hotel with many accounts, pass `top_n_companies=10` to see
+a fuller picture. Default of 3 is sufficient for most briefing questions.
 
 ---
 
@@ -76,4 +78,4 @@ not a concentration risk.
 dependency — the month is anchored by a small number of accounts.] The top
 account contributes [Z]% of the month's revenue. [If single company > 30%: this
 is above the 30% single-account threshold — recommend verifying the attrition
-clause on that contract.] Top 3 accounts combined control [W]% of the month."
+clause on that contract.] Top [N] accounts combined control [W]% of the month."
