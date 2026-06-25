@@ -215,13 +215,13 @@ Example shape is in [etl/LOAD_PROOF.example.json](etl/LOAD_PROOF.example.json).
 
 **Phase 1 checklist**
 
-- [ ] Playwright (or equivalent) scraper with pagination + list → detail drill-in
-- [ ] Idempotent load into [schema.sql](schema.sql) shape
+- [x] Playwright (or equivalent) scraper with pagination + list → detail drill-in
+- [x] Idempotent load into [schema.sql](schema.sql) shape
 - [ ] `load_manifest` populated on every ETL run
 - [ ] `etl/SCRAPE_MANIFEST.json` committed
 - [ ] `etl/LOAD_PROOF.json` committed
 - [ ] `tests/test_etl.py` with ≥ 3 cases covering [published ETL scenarios](tests/ETL_TEST_SCENARIOS.md)
-- [ ] Row counts reconciled with `/verify`
+- [x] Row counts reconciled with `/verify`
 
 ---
 
