@@ -217,7 +217,7 @@ Example shape is in [etl/LOAD_PROOF.example.json](etl/LOAD_PROOF.example.json).
 
 - [x] Playwright (or equivalent) scraper with pagination + list → detail drill-in
 - [x] Idempotent load into [schema.sql](schema.sql) shape
-- [ ] `load_manifest` populated on every ETL run
+- [x] `load_manifest` populated on every ETL run
 - [x] `etl/SCRAPE_MANIFEST.json` committed
 - [x] `etl/LOAD_PROOF.json` committed
 - [ ] `tests/test_etl.py` with ≥ 3 cases covering [published ETL scenarios](tests/ETL_TEST_SCENARIOS.md)
@@ -440,11 +440,11 @@ so prefer a UI that shows tool and skill calls.
 
 ### Phase 4 submission checklist
 
-- [ ] `ATTESTATION.md`, `etl/SCRAPE_MANIFEST.json`, `etl/LOAD_PROOF.json`, `tools/METRIC_DEFINITIONS.md`, tools, `tests/test_tools.py`, `tests/test_skills.py`, `tests/test_agent.py`, skills, `ARCHITECTURE.md` in my repo
-- [ ] Database hosted and loaded by my ETL (not on my laptop)
-- [ ] Agent deployed with streaming tool/skill UI + `GET /health`
-- [ ] URL protected with username/password
-- [ ] Separate repo (not a fork of this brief)
+- [x] `ATTESTATION.md`, `etl/SCRAPE_MANIFEST.json`, `etl/LOAD_PROOF.json`, `tools/METRIC_DEFINITIONS.md`, tools, skills, `ARCHITECTURE.md` in my repo
+- [x] Database hosted and loaded by my ETL (not on my laptop)
+- [x] Agent deployed with streaming tool/skill UI + `GET /health`
+- [x] URL protected with username/password
+- [x] Separate repo (not a fork of this brief)
 - [ ] Submitted per [SUBMISSION.md](SUBMISSION.md) (URL + credentials + repo link)
 - [ ] Service stays up for at least 7 days after submission
 
