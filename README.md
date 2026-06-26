@@ -218,8 +218,8 @@ Example shape is in [etl/LOAD_PROOF.example.json](etl/LOAD_PROOF.example.json).
 - [x] Playwright (or equivalent) scraper with pagination + list → detail drill-in
 - [x] Idempotent load into [schema.sql](schema.sql) shape
 - [ ] `load_manifest` populated on every ETL run
-- [ ] `etl/SCRAPE_MANIFEST.json` committed
-- [ ] `etl/LOAD_PROOF.json` committed
+- [x] `etl/SCRAPE_MANIFEST.json` committed
+- [x] `etl/LOAD_PROOF.json` committed
 - [ ] `tests/test_etl.py` with ≥ 3 cases covering [published ETL scenarios](tests/ETL_TEST_SCENARIOS.md)
 - [x] Row counts reconciled with `/verify`
 
@@ -239,10 +239,10 @@ possible — not live LLM calls in CI.
 
 **Phase 2 checklist**
 
-- [ ] `vw_stay_night_base` and `vw_segment_stay_night` applied (see [sql/VIEWS.example.sql](sql/VIEWS.example.sql))
-- [ ] All five required tools implemented
-- [ ] `tools/METRIC_DEFINITIONS.md` committed (see [REQUIRED_TOOLS.md](REQUIRED_TOOLS.md))
-- [ ] No raw SQL string tools exposed to the model
+- [x] `vw_stay_night_base` and `vw_segment_stay_night` applied (see [sql/VIEWS.example.sql](sql/VIEWS.example.sql))
+- [x] All five required tools implemented
+- [x] `tools/METRIC_DEFINITIONS.md` committed (see [REQUIRED_TOOLS.md](REQUIRED_TOOLS.md))
+- [x] No raw SQL string tools exposed to the model
 - [ ] `tests/test_tools.py`, `tests/test_skills.py`, `tests/test_agent.py` pass locally
 
 ---

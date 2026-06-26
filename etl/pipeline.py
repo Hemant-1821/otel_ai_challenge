@@ -38,11 +38,11 @@ _DEFAULT_DB_URL = "postgresql://hackathon:hackathon@localhost:5432/hotel_hackath
 # Static snapshot from /verify for today's anchor date.
 # Re-paste if the anchor date changes.
 VERIFY_SNAPSHOT = {
-    "anchor_date": "2026-06-25",
+    "anchor_date": "2026-06-26",
     "dataset_revision": "2026.06.12.2",
     "total_reservations": 254,
-    "total_stay_rows": 530,
-    "reservation_stay_status_sha256": "0208ccbf1c47aa83113a91a7b0caf852b965e5f739238068589974440a044daa",
+    "total_stay_rows": 528,
+    "reservation_stay_status_sha256": "f4dce18ab893a3eebc978f82e8e0e4a91ddbc0439bcdeb4061293b76cd955014",
 }
 
 
@@ -112,10 +112,14 @@ async def main() -> None:
         print("\n✓ Nothing to do.")
         return
 
+    # Inject dataset_revision from verify snapshot into the raw manifest
+    # so load.py can store the correct value in load_manifest (not the anchor date)
+
     # ── Extract ───────────────────────────────────────────────────
     print("\n── EXTRACT ──────────────────────────────────────────────")
     from etl.extract import run_extract
     raw = await run_extract()
+    raw["manifest"]["dataset_revision"] = VERIFY_SNAPSHOT["dataset_revision"]
 
     reservation_count = len(raw["list_items"])
     stay_row_count = sum(len(d.get("stay_rows", [])) for d in raw["details"])

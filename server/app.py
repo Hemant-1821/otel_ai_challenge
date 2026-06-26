@@ -168,8 +168,8 @@ async def health():
     return {
         "db_fingerprint": proof["reservation_stay_status_sha256"],
         "dataset_revision": proof["dataset_revision"],
-        "row_hash": proof["row_hash"],
-        "financial_status_posted_only_rows": proof["financial_status_posted_only_rows"],
+        "row_hash": proof["load_manifest_row_hash"],
+        "financial_status_posted_only_rows": proof["aggregates"]["posted_stay_rows"],
     }
 
 

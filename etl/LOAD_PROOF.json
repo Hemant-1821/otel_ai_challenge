@@ -1,8 +1,41 @@
 {
-  "anchor_date": "2026-06-25",
-  "dataset_revision": "2026-06-25",
-  "row_hash": "6796a21bdd14dfd500c5e43f4361ff5697fa401ad44a567522420d1f5d81a1f6",
-  "total_stay_rows": 530,
-  "financial_status_posted_only_rows": 525,
-  "reservation_stay_status_sha256": "1db6c43a280b2e09d23ea120ee62b0811f6ea25dea6f17be945041240fcf682b"
+  "version": 2,
+  "generated_at": "2026-06-26T11:54:09.978833+00:00",
+  "command": "scripts/compute_load_fingerprint.py --manifest etl/SCRAPE_MANIFEST.json --output etl/LOAD_PROOF.json",
+  "database_url_redacted": "postgresql://***:***@localhost:5432/hotel_hackathon",
+  "row_counts": {
+    "reservations_hackathon": 528,
+    "room_type_lookup": 3,
+    "rate_plan_lookup": 8,
+    "market_code_lookup": 10,
+    "market_macro_group_history": 11,
+    "channel_code_lookup": 4,
+    "load_manifest": 3
+  },
+  "reservation_stay_status_sha256": "f4dce18ab893a3eebc978f82e8e0e4a91ddbc0439bcdeb4061293b76cd955014",
+  "dataset_revision": "2026.06.12.2",
+  "load_manifest_row_hash": "dccaff5c1a0ff172df9208b4dc0b102777cf315dbe59fa935a5646f946d3a37d",
+  "load_manifest_scraped_at": "2026-06-26 11:44:19.145974+00",
+  "aggregates": {
+    "posted_stay_rows": 493,
+    "posted_reservations": 240,
+    "posted_otb_room_nights": 940,
+    "provisional_row_count": 5,
+    "posted_room_revenue": 176559.0,
+    "active_room_nights": 951,
+    "july_2025_posted_total_revenue": 10972.0,
+    "cancelled_reservation_count": 13,
+    "property_date_mismatch_count": 3
+  },
+  "verify_page_url": "https://otel-hackathon-data-site.vercel.app/verify",
+  "notes": "Compare row_counts and aggregates against the data site /verify page. dataset_revision must match the latest load_manifest row and the site.",
+  "scrape_manifest_check": {
+    "manifest_path": "etl/SCRAPE_MANIFEST.json",
+    "manifest_anchor_date": "2026-06-26",
+    "manifest_pages_scraped": 3,
+    "db_reservation_ids_count": 254,
+    "db_reservation_ids_sha256": "aea16e722cb664db652aafc238066566537dc2f9013d2b51b14dd5d22272e85c",
+    "manifest_valid": true,
+    "manifest_errors": []
+  }
 }

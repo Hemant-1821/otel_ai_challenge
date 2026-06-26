@@ -95,11 +95,13 @@ def load_lookup_tables(conn, transformed: dict) -> None:
 
 def load_reservations(conn, stay_rows: list[dict]) -> int:
     """
-    Upsert stay rows into reservations_hackathon.
-    Conflict key: (reservation_id, stay_date).
+    Truncate-and-reload reservations_hackathon.
+    Truncate is required because the anchor date shifts stay_date values —
+    upsert-only would leave stale rows from the previous anchor.
     Returns the number of rows processed.
     """
     with conn.cursor() as cur:
+        cur.execute("TRUNCATE TABLE public.reservations_hackathon")
         cur.executemany(
             """INSERT INTO public.reservations_hackathon (
                 reservation_id, arrival_date, departure_date,
@@ -201,9 +203,10 @@ def run_load(transformed: dict, db_url: str) -> None:
         print(f"[load] reservations_hackathon: {n} rows upserted")
 
         row_hash = _compute_row_hash(stay_rows)
+        dataset_revision = transformed.get("manifest", {}).get("dataset_revision", anchor_date)
         append_load_manifest(
             conn,
-            dataset_revision=anchor_date,
+            dataset_revision=dataset_revision,
             scraped_at=datetime.now(timezone.utc).isoformat(),
             source_url=SOURCE_URL,
             row_hash=row_hash,

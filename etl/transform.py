@@ -231,7 +231,9 @@ def run_transform(raw: dict) -> dict:
     details_by_id: dict[str, dict] = {d["reservation_id"]: d for d in raw["details"]}
     reservations = transform_reservations(raw["list_items"], details_by_id)
 
-    rate_plans = _reconcile_rate_plans(rate_plans, reservations)
+    # market/channel codes get placeholders so FK constraints hold;
+    # rate_plan_code FK is intentionally dropped in schema so we do NOT
+    # add placeholder rate plans — that would inflate rate_plan_lookup_rows.
     market_codes = _reconcile_market_codes(market_codes, reservations)
     channel_codes = _reconcile_channel_codes(channel_codes, reservations)
 

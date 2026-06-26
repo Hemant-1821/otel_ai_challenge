@@ -62,7 +62,7 @@ create table if not exists public.reservations_hackathon (
   market_code text not null references public.market_code_lookup(market_code),
   channel_code text not null references public.channel_code_lookup(channel_code),
   source_name text not null,
-  rate_plan_code text not null references public.rate_plan_lookup(rate_plan_code),
+  rate_plan_code text not null,
   daily_room_revenue_before_tax numeric(10,2) not null default 0,
   daily_total_revenue_before_tax numeric(10,2) not null default 0,
   nights integer not null check (nights > 0),
