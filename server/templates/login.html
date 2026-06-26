@@ -7,13 +7,13 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     :root {
-      --primary: #00d68f;
-      --bg: #06100d;
-      --surface: #0d1f18;
-      --border: #1c3025;
-      --text: #ddf0e6;
-      --muted: #5a8a70;
-      --dim: #3a5a48;
+      --primary: #00a86b;
+      --bg: #f5f7f6;
+      --surface: #ffffff;
+      --border: #cdddd5;
+      --text: #1a2e22;
+      --muted: #3d6e55;
+      --dim: #8ab5a0;
     }
 
     * { box-sizing: border-box; }
@@ -36,8 +36,8 @@
       position: fixed;
       inset: 0;
       background-image:
-        linear-gradient(rgba(0,214,143,.04) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0,214,143,.04) 1px, transparent 1px);
+        linear-gradient(rgba(0,168,107,.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,168,107,.05) 1px, transparent 1px);
       background-size: 48px 48px;
       animation: gridDrift 20s linear infinite;
       pointer-events: none;
@@ -55,7 +55,7 @@
       top: 50%; left: 50%;
       transform: translate(-50%, -50%);
       width: 600px; height: 600px;
-      background: radial-gradient(circle, rgba(0,214,143,.06) 0%, transparent 70%);
+      background: radial-gradient(circle, rgba(0,168,107,.06) 0%, transparent 70%);
       pointer-events: none;
       z-index: 0;
     }
@@ -70,9 +70,9 @@
       width: 100%;
       max-width: 420px;
       box-shadow:
-        0 0 0 1px rgba(0,214,143,.08),
-        0 24px 64px rgba(0,0,0,.6),
-        0 0 80px rgba(0,214,143,.04);
+        0 0 0 1px rgba(0,168,107,.08),
+        0 8px 32px rgba(0,0,0,.08),
+        0 0 0 rgba(0,168,107,0);
     }
 
     .logo-hex {
@@ -96,7 +96,7 @@
 
     .field-input {
       width: 100%;
-      background: rgba(0,214,143,.03);
+      background: #f5f7f6;
       border: 1px solid var(--border);
       border-radius: 10px;
       padding: 11px 14px;
@@ -109,15 +109,15 @@
     .field-input::placeholder { color: var(--dim); }
 
     .field-input:focus {
-      border-color: rgba(0,214,143,.45);
-      box-shadow: 0 0 0 3px rgba(0,214,143,.08);
+      border-color: rgba(0,168,107,.5);
+      box-shadow: 0 0 0 3px rgba(0,168,107,.1);
     }
 
     .btn-login {
       width: 100%;
       padding: 12px;
       border-radius: 10px;
-      background: linear-gradient(135deg, #00d68f, #00a86b);
+      background: linear-gradient(135deg, #00a86b, #007a4d);
       color: #fff;
       font-weight: 700;
       font-size: 14px;
@@ -140,7 +140,7 @@
 
     .btn-login:hover {
       transform: translateY(-1px);
-      box-shadow: 0 8px 24px rgba(0,214,143,.35);
+      box-shadow: 0 8px 24px rgba(0,168,107,.3);
     }
 
     .btn-login:hover::after { opacity: 1; }
@@ -151,7 +151,7 @@
       border: 1px solid rgba(239,68,68,.25);
       border-radius: 8px;
       padding: 10px 14px;
-      color: #fca5a5;
+      color: #b91c1c;
       font-size: 13px;
       display: flex;
       align-items: center;
@@ -168,15 +168,15 @@
       <div class="inline-block logo-hex mb-3">
         <svg width="52" height="52" viewBox="0 0 52 52" fill="none">
           <path d="M26 3L47 14.5V37.5L26 49L5 37.5V14.5L26 3Z"
-            fill="rgba(0,214,143,.1)" stroke="#00d68f" stroke-width="1.5"/>
+            fill="rgba(0,168,107,.12)" stroke="#00a86b" stroke-width="1.5"/>
           <path d="M26 11L39 18.5V33.5L26 41L13 33.5V18.5L26 11Z"
-            fill="rgba(0,214,143,.07)" stroke="rgba(0,214,143,.4)" stroke-width="1"/>
-          <circle cx="26" cy="26" r="5" fill="#00d68f"
-            style="filter: drop-shadow(0 0 6px #00d68f)"/>
+            fill="rgba(0,168,107,.07)" stroke="rgba(0,168,107,.4)" stroke-width="1"/>
+          <circle cx="26" cy="26" r="5" fill="#00a86b"
+            style="filter: drop-shadow(0 0 6px #00a86b)"/>
         </svg>
       </div>
       <div class="flex items-center justify-center gap-2 mb-1">
-        <span class="text-white text-2xl font-bold tracking-tight">otel</span>
+        <span style="color: var(--text); font-size: 1.5rem; font-weight: 700; letter-spacing: -.01em;">otel</span>
         <span style="color: var(--primary); font-size: 1.5rem; font-weight: 700;">AI</span>
       </div>
       <p style="color: var(--dim); font-size: 11px; letter-spacing: .12em; text-transform: uppercase;">

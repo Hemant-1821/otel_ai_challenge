@@ -18,9 +18,18 @@ ADR = room_revenue / room_nights
     = get_otb_summary.room_revenue / get_otb_summary.room_nights
 ```
 
-For room-type breakdown, call `get_segment_mix` — though it segments by market
-code, comparing ADR across segments reveals whether high-rate or low-rate
-segments are dominating the mix.
+**For room-type breakdown** (best/worst room type by ADR or revenue):
+
+```
+get_otb_summary(stay_month, breakdown="room_type")
+```
+
+Returns `breakdown_rows` — one entry per `space_type` with `display_name`,
+`room_class`, `room_nights`, `room_revenue`, `total_revenue`, and `adr`
+(pre-derived as `room_revenue / room_nights`). Sorted by `total_revenue` desc.
+Use `adr` from each row to rank room types; compare against the floor thresholds
+in the table below. Never use `get_segment_mix` for room-type ADR questions —
+segments are market codes, not room types.
 
 For group vs transient ADR comparison: call `get_block_vs_transient_mix` for
 revenue and room nights, then derive ADR for each:

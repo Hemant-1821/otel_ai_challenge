@@ -35,6 +35,8 @@ A 2-room 3-night reservation = **3 rows**, each with `number_of_spaces = 2`.
 
 Tool to call: `get_otb_summary` returns all three counts (`reservation_count`,
 `room_nights`, `row_count`) so you can always cross-check grain.
+For room-type breakdowns, pass `breakdown="room_type"` — returns `breakdown_rows`
+with per-`space_type` counts, revenue, and pre-derived ADR.
 
 ---
 

@@ -8,20 +8,20 @@
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <style>
     :root {
-      --primary:       #00d68f;
-      --primary-dim:   #00a86b;
-      --primary-glow:  rgba(0,214,143,.15);
-      --bg:            #06100d;
-      --surface:       #0c1a12;
-      --card:          #111f16;
-      --card-hover:    #162b1e;
-      --border:        #1c3025;
-      --border-dim:    #142219;
-      --text:          #ddf0e6;
-      --text-muted:    #5a8a70;
-      --text-dim:      #3a5a48;
-      --amber:         #f59e0b;
-      --red:           #ef4444;
+      --primary:       #00a86b;
+      --primary-dim:   #007a4d;
+      --primary-glow:  rgba(0,168,107,.12);
+      --bg:            #f5f7f6;
+      --surface:       #edf2ef;
+      --card:          #ffffff;
+      --card-hover:    #f0f5f2;
+      --border:        #cdddd5;
+      --border-dim:    #ddeae3;
+      --text:          #1a2e22;
+      --text-muted:    #3d6e55;
+      --text-dim:      #8ab5a0;
+      --amber:         #d97706;
+      --red:           #dc2626;
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -41,8 +41,8 @@
       content: '';
       position: fixed; inset: 0;
       background-image:
-        linear-gradient(rgba(0,214,143,.025) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0,214,143,.025) 1px, transparent 1px);
+        linear-gradient(rgba(0,168,107,.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,168,107,.04) 1px, transparent 1px);
       background-size: 48px 48px;
       pointer-events: none;
       z-index: 0;
@@ -57,7 +57,7 @@
     .header {
       position: relative; z-index: 10;
       height: 60px;
-      background: rgba(9,20,14,.96);
+      background: rgba(255,255,255,.95);
       backdrop-filter: blur(20px);
       border-bottom: 1px solid var(--border);
       display: flex;
@@ -117,7 +117,7 @@
       max-width: 82%;
       font-size: 14px;
       line-height: 1.6;
-      box-shadow: 0 4px 20px rgba(0,0,0,.3);
+      box-shadow: 0 2px 12px rgba(0,0,0,.08);
       word-break: break-word;
     }
 
@@ -142,7 +142,7 @@
     .prose p { margin-bottom: 10px; }
     .prose p:last-child { margin-bottom: 0; }
     .prose strong { color: var(--primary); font-weight: 600; }
-    .prose em { color: #a0d4b5; font-style: italic; }
+    .prose em { color: var(--text-muted); font-style: italic; }
     .prose h1, .prose h2, .prose h3 {
       color: var(--text); font-weight: 700; margin: 14px 0 8px;
       line-height: 1.3;
@@ -169,7 +169,7 @@
       overflow-x: auto;
       margin-bottom: 10px;
     }
-    .prose pre code { background: none; border: none; padding: 0; color: #a0d4b5; }
+    .prose pre code { background: none; border: none; padding: 0; color: var(--text-muted); }
     .prose blockquote {
       border-left: 3px solid rgba(0,214,143,.4);
       padding-left: 12px;
@@ -207,7 +207,7 @@
     .input-bar {
       position: relative; z-index: 2;
       padding: 16px 24px;
-      background: rgba(6,16,13,.9);
+      background: rgba(245,247,246,.95);
       backdrop-filter: blur(16px);
       border-top: 1px solid var(--border);
       flex-shrink: 0;
@@ -239,9 +239,129 @@
     }
     .chat-textarea::placeholder { color: var(--text-dim); }
     .chat-textarea:focus {
-      border-color: rgba(0,214,143,.4);
-      box-shadow: 0 0 0 3px rgba(0,214,143,.07);
+      border-color: rgba(0,168,107,.4);
+      box-shadow: 0 0 0 3px rgba(0,168,107,.08);
       outline: none;
+    }
+
+    /* ── Tools dropdown ── */
+    .tools-dropdown-wrap {
+      position: relative;
+      flex-shrink: 0;
+      align-self: flex-end;
+    }
+
+    .tools-btn {
+      height: 46px;
+      padding: 0 14px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: var(--text-muted);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all .2s;
+      white-space: nowrap;
+    }
+    .tools-btn:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+    .tools-btn.open {
+      border-color: var(--primary);
+      color: var(--primary);
+      background: rgba(0,168,107,.05);
+    }
+    .tools-btn svg { flex-shrink: 0; }
+    .tools-btn .chevron {
+      transition: transform .2s;
+    }
+    .tools-btn.open .chevron {
+      transform: rotate(180deg);
+    }
+
+    .tools-menu {
+      display: none;
+      position: absolute;
+      bottom: calc(100% + 8px);
+      left: 0;
+      width: 320px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      box-shadow: 0 8px 32px rgba(0,0,0,.12);
+      overflow: hidden;
+      z-index: 50;
+    }
+    .tools-menu.open { display: block; }
+
+    .tools-menu-header {
+      padding: 10px 14px 8px;
+      border-bottom: 1px solid var(--border-dim);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+    }
+
+    .tool-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border-dim);
+    }
+    .tool-item:last-child { border-bottom: none; }
+
+    .tool-icon {
+      width: 28px; height: 28px;
+      border-radius: 7px;
+      background: rgba(0,168,107,.08);
+      border: 1px solid rgba(0,168,107,.15);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .tool-name {
+      font-family: 'JetBrains Mono', 'Fira Code', monospace;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--primary);
+      margin-bottom: 2px;
+    }
+
+    .tool-desc {
+      font-size: 11px;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    .tool-badge {
+      display: inline-block;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+      padding: 1px 5px;
+      border-radius: 4px;
+      margin-left: 5px;
+      vertical-align: middle;
+    }
+    .tool-badge.hitl {
+      background: rgba(245,158,11,.12);
+      color: #d97706;
+      border: 1px solid rgba(245,158,11,.2);
+    }
+    .tool-badge.sub {
+      background: rgba(129,140,248,.1);
+      color: #6366f1;
+      border: 1px solid rgba(129,140,248,.2);
     }
 
     .send-btn {
@@ -307,12 +427,12 @@
 
     /* ── Activity panel ── */
     .activity-panel {
-      width: 340px;
+      width: 420px;
       flex-shrink: 0;
       border-left: 1px solid var(--border);
       display: flex;
       flex-direction: column;
-      background: rgba(8,16,11,.85);
+      background: rgba(237,242,239,.9);
       backdrop-filter: blur(8px);
     }
 
@@ -327,6 +447,7 @@
 
     .activity-feed {
       flex: 1;
+      min-height: 0;
       overflow-y: auto;
       padding: 12px;
       display: flex;
@@ -340,6 +461,7 @@
       border: 1px solid var(--border);
       border-radius: 10px;
       overflow: hidden;
+      flex-shrink: 0;
       animation: cardSlideIn .22s ease-out;
     }
 
@@ -413,13 +535,13 @@
       font-family: 'JetBrains Mono', 'Fira Code', monospace;
       color: var(--text-dim);
       line-height: 1.5;
-      max-height: 64px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      display: -webkit-box;
-      -webkit-line-clamp: 3;
-      -webkit-box-orient: vertical;
+      min-height: 64px;
+      max-height: 83px;
+      overflow-y: auto;
     }
+    .card-output::-webkit-scrollbar { width: 3px; }
+    .card-output::-webkit-scrollbar-track { background: transparent; }
+    .card-output::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 
     /* ── Pulse on active ── */
     .active-pulse {
@@ -437,6 +559,75 @@
       gap: 10px;
       color: var(--text-dim);
     }
+
+    /* ── HITL approval card ── */
+    .hitl-card {
+      background: var(--card);
+      border: 1px solid rgba(245,158,11,.35);
+      border-radius: 4px 18px 18px 18px;
+      padding: 16px 18px;
+      max-width: 82%;
+      font-size: 14px;
+      line-height: 1.6;
+      box-shadow: 0 2px 12px rgba(245,158,11,.08);
+    }
+
+    .hitl-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: #d97706;
+      margin-bottom: 8px;
+    }
+
+    .hitl-params {
+      font-family: 'JetBrains Mono', 'Fira Code', monospace;
+      font-size: 11px;
+      background: rgba(245,158,11,.06);
+      border: 1px solid rgba(245,158,11,.15);
+      border-radius: 6px;
+      padding: 8px 10px;
+      color: var(--text-muted);
+      margin: 8px 0 14px;
+      line-height: 1.6;
+    }
+
+    .hitl-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn-approve {
+      padding: 7px 18px;
+      border-radius: 8px;
+      border: none;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dim));
+      color: #fff;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all .2s;
+    }
+    .btn-approve:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(0,168,107,.3); }
+    .btn-approve:disabled { opacity: .45; cursor: not-allowed; transform: none; box-shadow: none; }
+
+    .btn-reject {
+      padding: 7px 18px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--card);
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all .2s;
+    }
+    .btn-reject:hover { border-color: #dc2626; color: #dc2626; }
+    .btn-reject:disabled { opacity: .45; cursor: not-allowed; }
 
     /* ── Kbd ── */
     kbd {
@@ -465,7 +656,7 @@
       </svg>
       <div>
         <div style="display:flex; align-items:baseline; gap:6px;">
-          <span style="color:#fff; font-size:17px; font-weight:700; letter-spacing:-.01em;">otel</span>
+          <span style="color:var(--text); font-size:17px; font-weight:700; letter-spacing:-.01em;">otel</span>
           <span style="color:var(--primary); font-size:17px; font-weight:700;">AI</span>
         </div>
         <div style="color:var(--text-dim); font-size:10px; letter-spacing:.12em; text-transform:uppercase; margin-top:-2px;">
@@ -512,7 +703,7 @@
             <div style="color:var(--text-dim); font-size:11px; letter-spacing:.12em; text-transform:uppercase; margin-bottom:8px;">
               Good morning
             </div>
-            <h1 style="color:#fff; font-size:22px; font-weight:600; margin-bottom:6px;">
+            <h1 style="color:var(--text); font-size:22px; font-weight:600; margin-bottom:6px;">
               What would you like to review?
             </h1>
             <p style="color:var(--text-muted); font-size:13px;">
@@ -543,6 +734,105 @@
       <!-- Input bar -->
       <div class="input-bar">
         <div class="input-wrap">
+
+          <!-- Tools info dropdown -->
+          <div class="tools-dropdown-wrap">
+            <button class="tools-btn" id="tools-btn" onclick="toggleTools(event)" type="button">
+              <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="1" y="1" width="5" height="5" rx="1"/>
+                <rect x="8" y="1" width="5" height="5" rx="1"/>
+                <rect x="1" y="8" width="5" height="5" rx="1"/>
+                <rect x="8" y="8" width="5" height="5" rx="1"/>
+              </svg>
+              Tools
+              <svg class="chevron" width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+                <path d="M2 3.5l3 3 3-3"/>
+              </svg>
+            </button>
+
+            <div class="tools-menu" id="tools-menu">
+              <div class="tools-menu-header">Available Tools</div>
+
+              <div class="tool-item">
+                <div class="tool-icon">
+                  <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="#00a86b" stroke-width="1.6" stroke-linecap="round">
+                    <path d="M1 3h12M1 7h8M1 11h5"/>
+                  </svg>
+                </div>
+                <div>
+                  <div class="tool-name">get_otb_summary</div>
+                  <div class="tool-desc">Revenue, room nights, ADR, and cancellation rate on the books for a given date range.</div>
+                </div>
+              </div>
+
+              <div class="tool-item">
+                <div class="tool-icon">
+                  <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="#00a86b" stroke-width="1.6" stroke-linecap="round">
+                    <circle cx="7" cy="7" r="5.5"/>
+                    <path d="M7 1.5v11M1.5 7h11"/>
+                  </svg>
+                </div>
+                <div>
+                  <div class="tool-name">get_segment_mix</div>
+                  <div class="tool-desc">Booking share by market segment and macro group for a stay period.</div>
+                </div>
+              </div>
+
+              <div class="tool-item">
+                <div class="tool-icon">
+                  <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="#00a86b" stroke-width="1.6" stroke-linecap="round">
+                    <path d="M1 11l3-3 3 3 3-4 3-4"/>
+                  </svg>
+                </div>
+                <div>
+                  <div class="tool-name">get_pickup_delta</div>
+                  <div class="tool-desc">New reservations and revenue added in a recent lookback window.</div>
+                </div>
+              </div>
+
+              <div class="tool-item">
+                <div class="tool-icon">
+                  <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="#00a86b" stroke-width="1.6" stroke-linecap="round">
+                    <rect x="1.5" y="1.5" width="11" height="11" rx="2"/>
+                    <path d="M1.5 5.5h11"/>
+                    <path d="M5.5 5.5v7"/>
+                  </svg>
+                </div>
+                <div>
+                  <div class="tool-name">get_as_of_otb <span class="tool-badge hitl">HITL</span></div>
+                  <div class="tool-desc">Historical OTB snapshot for pace comparison. Requires GM approval before running.</div>
+                </div>
+              </div>
+
+              <div class="tool-item">
+                <div class="tool-icon">
+                  <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="#00a86b" stroke-width="1.6" stroke-linecap="round">
+                    <path d="M2 4h4v6H2zM8 4h4v6H8z"/>
+                  </svg>
+                </div>
+                <div>
+                  <div class="tool-name">get_block_vs_transient_mix</div>
+                  <div class="tool-desc">Group block vs transient split; flags high dependency or single-company concentration.</div>
+                </div>
+              </div>
+
+              <div class="tool-item">
+                <div class="tool-icon">
+                  <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="#6366f1" stroke-width="1.6" stroke-linecap="round">
+                    <circle cx="7" cy="3" r="1.5"/>
+                    <circle cx="3" cy="11" r="1.5"/>
+                    <circle cx="11" cy="11" r="1.5"/>
+                    <path d="M7 4.5v3L3 9.5M7 7.5l4 2"/>
+                  </svg>
+                </div>
+                <div>
+                  <div class="tool-name">task() <span class="tool-badge sub">Subagent</span></div>
+                  <div class="tool-desc">Routes deep segment or OTA concentration questions to the segment-analyst subagent.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <textarea
             id="chat-input"
             class="chat-textarea"
@@ -624,6 +914,20 @@
     function handleKeydown(e) {
       if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
     }
+
+    // ── Tools dropdown ───────────────────────────────────────────────
+    function toggleTools(e) {
+      e.stopPropagation();
+      const btn  = $('tools-btn');
+      const menu = $('tools-menu');
+      const open = menu.classList.toggle('open');
+      btn.classList.toggle('open', open);
+    }
+
+    document.addEventListener('click', () => {
+      $('tools-menu').classList.remove('open');
+      $('tools-btn').classList.remove('open');
+    });
 
     function scrollMessages() {
       const el = $('messages');
@@ -951,6 +1255,111 @@
       }
     }
 
+    // ── HITL approval card ───────────────────────────────────────────
+    function addHitlCard(tool, params) {
+      removeTypingIndicator();
+
+      // Format params as key: value lines
+      let paramsHtml = '';
+      if (params && typeof params === 'object' && Object.keys(params).length) {
+        paramsHtml = Object.entries(params)
+          .map(([k, v]) => `${escHtml(k)}: <strong>${escHtml(String(v))}</strong>`)
+          .join('\n');
+      }
+
+      const row = document.createElement('div');
+      row.className = 'msg-row agent';
+      row.id = 'hitl-row';
+      row.innerHTML = `
+        <div class="agent-badge" style="border-color:rgba(245,158,11,.3); background:rgba(245,158,11,.08);">
+          <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
+            <circle cx="7" cy="7" r="6" stroke="#d97706" stroke-width="1.4"/>
+            <path d="M7 4v3M7 8.5v.5" stroke="#d97706" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="hitl-card">
+          <div class="hitl-label">
+            <svg width="10" height="10" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6">
+              <circle cx="7" cy="7" r="6"/><path d="M7 4v3M7 8.5v.5" stroke-linecap="round"/>
+            </svg>
+            Approval Required
+          </div>
+          <div style="font-size:13px; color:var(--text); margin-bottom:4px;">
+            The agent needs to run a <strong>historical OTB rebuild</strong> — this queries point-in-time reservation data and can be a heavier operation than a standard OTB lookup. Please review the parameters below and approve only if they look correct.
+          </div>
+          <div style="font-size:12px; color:var(--text-muted); margin-bottom:8px;">
+            Tool: <code style="font-size:11px; padding:1px 5px; background:rgba(245,158,11,.08); border:1px solid rgba(245,158,11,.2); border-radius:4px; color:#d97706;">${escHtml(tool)}</code>
+          </div>
+          ${paramsHtml ? `<div class="hitl-params">${paramsHtml}</div>` : ''}
+          <div class="hitl-actions">
+            <button class="btn-approve" id="btn-approve" onclick="resumeAgent(true)">Approve</button>
+            <button class="btn-reject"  id="btn-reject"  onclick="resumeAgent(false)">Reject</button>
+          </div>
+        </div>`;
+      $('messages').appendChild(row);
+      scrollMessages();
+    }
+
+    async function resumeAgent(approved) {
+      // Disable buttons immediately
+      const ba = $('btn-approve');
+      const br = $('btn-reject');
+      if (ba) ba.disabled = true;
+      if (br) br.disabled = true;
+
+      // Show what the user chose
+      const label = approved ? '✓ Approved' : '✗ Rejected';
+      const color = approved ? 'var(--primary)' : '#dc2626';
+      if (ba) ba.textContent = approved ? label : 'Approve';
+      if (br) br.textContent = approved ? 'Reject' : label;
+      if (approved && ba) ba.style.background = color;
+      if (!approved && br) { br.style.color = color; br.style.borderColor = color; }
+
+      addTypingIndicator();
+      setActivityActive(true);
+      isStreaming = true;
+      $('send-btn').disabled = true;
+
+      try {
+        const resp = await fetch('/api/chat/resume', {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body:    JSON.stringify({ thread_id: threadId, approved }),
+        });
+
+        if (!resp.ok) throw new Error(`Server error ${resp.status}`);
+
+        const reader  = resp.body.getReader();
+        const decoder = new TextDecoder();
+        let   buffer  = '';
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+          const parts = buffer.split('\n\n');
+          buffer = parts.pop();
+          for (const part of parts) {
+            for (const { type, data } of parseSSE(part + '\n\n')) {
+              handleEvent(type, data);
+            }
+          }
+        }
+        if (buffer.trim()) {
+          for (const { type, data } of parseSSE(buffer)) {
+            handleEvent(type, data);
+          }
+        }
+      } catch (err) {
+        addErrorMessage(err.message || 'Resume failed. Please try again.');
+      } finally {
+        isStreaming = false;
+        $('send-btn').disabled = false;
+        setActivityActive(false);
+        if (pendingLlmCard) { completeLlmCard(pendingLlmCard); pendingLlmCard = null; }
+      }
+    }
+
     function handleEvent(type, data) {
       if (type === 'llm_start') {
         addLlmCard();
@@ -960,6 +1369,10 @@
         completeToolCard(data.output || '');
       } else if (type === 'answer') {
         addAgentMessage(data.content || '');
+      } else if (type === 'hitl') {
+        setActivityActive(false);
+        if (pendingLlmCard) { completeLlmCard(pendingLlmCard); pendingLlmCard = null; }
+        addHitlCard(data.tool || 'get_as_of_otb', data.params || {});
       } else if (type === 'error') {
         addErrorMessage(data.content || 'Unknown error');
       } else if (type === 'done') {

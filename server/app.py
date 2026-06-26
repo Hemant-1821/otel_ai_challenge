@@ -21,6 +21,7 @@ from fastapi import Cookie, FastAPI, HTTPException, Request
 from fastapi.responses import HTMLResponse, RedirectResponse, StreamingResponse
 from jinja2 import Environment, FileSystemLoader
 from langchain_core.callbacks import BaseCallbackHandler
+from langgraph.types import Command
 from pydantic import BaseModel
 
 from agent.agent import agent
@@ -40,11 +41,34 @@ def render(name: str, **ctx: object) -> HTMLResponse:
     return HTMLResponse(_tmpl_env.get_template(name).render(**ctx))
 
 
+def _extract_text(content: object) -> str:
+    """Normalise LangChain message content to a plain string.
+
+    Claude returns a list of typed blocks when it also emits tool calls.
+    We pull out only the text blocks so markdown rendering doesn't choke.
+    """
+    if isinstance(content, str):
+        return content
+    if isinstance(content, list):
+        parts = [
+            block["text"]
+            for block in content
+            if isinstance(block, dict) and block.get("type") == "text" and block.get("text")
+        ]
+        return "\n".join(parts) if parts else ""
+    return str(content)
+
+
 # ── Models ────────────────────────────────────────────────────────────────────
 
 class ChatRequest(BaseModel):
     message: str
     thread_id: str
+
+
+class ResumeRequest(BaseModel):
+    thread_id: str
+    approved: bool
 
 
 # ── SSE callback bridge ───────────────────────────────────────────────────────
@@ -71,6 +95,62 @@ class _SSECallback(BaseCallbackHandler):
 
     def on_llm_start(self, serialized, prompts, **kwargs):
         self._emit({"type": "llm_start"})
+
+
+# ── Shared agent runner ───────────────────────────────────────────────────────
+
+def _run_and_stream(
+    invoke_input: object,
+    thread_id: str,
+    q: asyncio.Queue,
+    loop: asyncio.AbstractEventLoop,
+) -> None:
+    """Invoke the agent, detect HITL interrupts, push SSE events to queue."""
+    cb = _SSECallback(q, loop)
+    config = {
+        "recursion_limit": 40,
+        "configurable": {"thread_id": thread_id},
+        "callbacks": [cb],
+    }
+
+    def emit(event: dict) -> None:
+        asyncio.run_coroutine_threadsafe(q.put(event), loop)
+
+    try:
+        agent.invoke(invoke_input, config=config)
+
+        # Check whether the graph paused on a HITL interrupt
+        snapshot = agent.get_state({"configurable": {"thread_id": thread_id}})
+
+        if snapshot.next:
+            # Extract HITLRequest from the interrupt value stored in snapshot tasks
+            tool_name = "get_as_of_otb"
+            tool_params: dict = {}
+            for task in snapshot.tasks or []:
+                for intr in getattr(task, "interrupts", None) or []:
+                    val = getattr(intr, "value", None)
+                    if isinstance(val, dict) and "action_requests" in val:
+                        reqs = val["action_requests"]
+                        if reqs:
+                            tool_name = reqs[0].get("name", tool_name)
+                            tool_params = reqs[0].get("args", {})
+
+            emit({
+                "type": "hitl",
+                "tool": tool_name,
+                "params": tool_params,
+            })
+        else:
+            # Normal completion — send the final answer
+            msgs = snapshot.values.get("messages", [])
+            last = msgs[-1] if msgs else None
+            content = _extract_text(last.content) if last and hasattr(last, "content") else ""
+            emit({"type": "answer", "content": content})
+
+    except Exception as exc:
+        emit({"type": "error", "content": str(exc)})
+    finally:
+        asyncio.run_coroutine_threadsafe(q.put(None), loop)
 
 
 # ── Routes ────────────────────────────────────────────────────────────────────
@@ -130,31 +210,55 @@ async def chat_stream(body: ChatRequest, session: str = Cookie(None)):
     async def generate() -> AsyncGenerator[str, None]:
         loop = asyncio.get_event_loop()
         q: asyncio.Queue = asyncio.Queue()
-        cb = _SSECallback(q, loop)
 
-        def run_agent() -> None:
-            try:
-                result = agent.invoke(
-                    {"messages": [{"role": "user", "content": body.message}]},
-                    config={
-                        "recursion_limit": 15,
-                        "configurable": {"thread_id": body.thread_id},
-                        "callbacks": [cb],
-                    },
-                )
-                last = result["messages"][-1]
-                content = last.content if hasattr(last, "content") else str(last)
-                asyncio.run_coroutine_threadsafe(
-                    q.put({"type": "answer", "content": content}), loop
-                )
-            except Exception as exc:
-                asyncio.run_coroutine_threadsafe(
-                    q.put({"type": "error", "content": str(exc)}), loop
-                )
-            finally:
-                asyncio.run_coroutine_threadsafe(q.put(None), loop)
+        threading.Thread(
+            target=_run_and_stream,
+            args=(
+                {"messages": [{"role": "user", "content": body.message}]},
+                body.thread_id,
+                q,
+                loop,
+            ),
+            daemon=True,
+        ).start()
 
-        threading.Thread(target=run_agent, daemon=True).start()
+        while True:
+            event = await q.get()
+            if event is None:
+                yield "event: done\ndata: {}\n\n"
+                break
+            yield f"event: {event['type']}\ndata: {json.dumps(event)}\n\n"
+
+    return StreamingResponse(
+        generate(),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )
+
+
+@app.post("/api/chat/resume")
+async def chat_resume(body: ResumeRequest, session: str = Cookie(None)):
+    username = verify_session(session)
+    if not username:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+
+    async def generate() -> AsyncGenerator[str, None]:
+        loop = asyncio.get_event_loop()
+        q: asyncio.Queue = asyncio.Queue()
+
+        decision = "approve" if body.approved else "reject"
+        resume_payload = {"decisions": [{"type": decision}]}
+
+        threading.Thread(
+            target=_run_and_stream,
+            args=(
+                Command(resume=resume_payload),
+                body.thread_id,
+                q,
+                loop,
+            ),
+            daemon=True,
+        ).start()
 
         while True:
             event = await q.get()
