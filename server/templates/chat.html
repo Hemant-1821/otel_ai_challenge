@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>otel AI — Revenue Manager</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <style>
+    :root {
+      --primary:       #00d68f;
+      --primary-dim:   #00a86b;
+      --primary-glow:  rgba(0,214,143,.15);
+      --bg:            #06100d;
+      --surface:       #0c1a12;
+      --card:          #111f16;
+      --card-hover:    #162b1e;
+      --border:        #1c3025;
+      --border-dim:    #142219;
+      --text:          #ddf0e6;
+      --text-muted:    #5a8a70;
+      --text-dim:      #3a5a48;
+      --amber:         #f59e0b;
+      --red:           #ef4444;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body { height: 100%; overflow: hidden; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Subtle grid */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image:
+        linear-gradient(rgba(0,214,143,.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,214,143,.025) 1px, transparent 1px);
+      background-size: 48px 48px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── Scrollbars ── */
+    ::-webkit-scrollbar { width: 3px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+    /* ── Header ── */
+    .header {
+      position: relative; z-index: 10;
+      height: 60px;
+      background: rgba(9,20,14,.96);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      flex-shrink: 0;
+    }
+
+    /* ── Main layout ── */
+    .main {
+      position: relative; z-index: 1;
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* ── Chat column ── */
+    .chat-col {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .messages-area {
+      flex: 1;
+      overflow-y: auto;
+      padding: 32px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* ── Message bubbles ── */
+    .msg-row { display: flex; }
+    .msg-row.user { justify-content: flex-end; }
+    .msg-row.agent { justify-content: flex-start; }
+
+    .bubble-user {
+      background: linear-gradient(135deg, #00c07e, #007a4d);
+      color: #fff;
+      padding: 12px 18px;
+      border-radius: 18px 18px 4px 18px;
+      max-width: 70%;
+      font-size: 14px;
+      line-height: 1.55;
+      box-shadow: 0 4px 16px rgba(0,181,120,.25);
+      word-break: break-word;
+    }
+
+    .bubble-agent {
+      background: var(--card);
+      border: 1px solid var(--border);
+      padding: 18px 20px;
+      border-radius: 4px 18px 18px 18px;
+      max-width: 82%;
+      font-size: 14px;
+      line-height: 1.6;
+      box-shadow: 0 4px 20px rgba(0,0,0,.3);
+      word-break: break-word;
+    }
+
+    .bubble-agent.error {
+      border-color: rgba(239,68,68,.3);
+      background: rgba(239,68,68,.05);
+    }
+
+    /* Agent avatar badge */
+    .agent-badge {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      background: var(--primary-glow);
+      border: 1px solid rgba(0,214,143,.3);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      margin-right: 10px;
+      margin-top: 2px;
+    }
+
+    /* ── Markdown prose ── */
+    .prose p { margin-bottom: 10px; }
+    .prose p:last-child { margin-bottom: 0; }
+    .prose strong { color: var(--primary); font-weight: 600; }
+    .prose em { color: #a0d4b5; font-style: italic; }
+    .prose h1, .prose h2, .prose h3 {
+      color: var(--text); font-weight: 700; margin: 14px 0 8px;
+      line-height: 1.3;
+    }
+    .prose h1 { font-size: 1.1rem; }
+    .prose h2 { font-size: 1rem; }
+    .prose h3 { font-size: .9rem; color: var(--text-muted); }
+    .prose ul, .prose ol { padding-left: 20px; margin-bottom: 10px; }
+    .prose li { margin-bottom: 4px; }
+    .prose code {
+      font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+      font-size: 12px;
+      background: rgba(0,214,143,.08);
+      border: 1px solid rgba(0,214,143,.12);
+      padding: 1px 6px;
+      border-radius: 4px;
+      color: var(--primary);
+    }
+    .prose pre {
+      background: var(--border-dim);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px;
+      overflow-x: auto;
+      margin-bottom: 10px;
+    }
+    .prose pre code { background: none; border: none; padding: 0; color: #a0d4b5; }
+    .prose blockquote {
+      border-left: 3px solid rgba(0,214,143,.4);
+      padding-left: 12px;
+      color: var(--text-muted);
+      margin: 8px 0;
+    }
+    .prose a { color: var(--primary); text-decoration: underline; }
+    .prose hr { border-color: var(--border); margin: 12px 0; }
+
+    /* ── Typing indicator ── */
+    .typing-wrap {
+      display: flex; align-items: center; gap: 10px;
+    }
+    .typing-dots {
+      display: flex; gap: 4px; align-items: center;
+      padding: 14px 18px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 4px 18px 18px 18px;
+    }
+    .dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--primary);
+      animation: bounce 1.3s ease-in-out infinite;
+    }
+    .dot:nth-child(2) { animation-delay: .18s; }
+    .dot:nth-child(3) { animation-delay: .36s; }
+    @keyframes bounce {
+      0%,100% { transform: translateY(0); opacity: .4; }
+      50%      { transform: translateY(-6px); opacity: 1; }
+    }
+
+    /* ── Input bar ── */
+    .input-bar {
+      position: relative; z-index: 2;
+      padding: 16px 24px;
+      background: rgba(6,16,13,.9);
+      backdrop-filter: blur(16px);
+      border-top: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    .input-wrap {
+      display: flex;
+      gap: 10px;
+      align-items: flex-end;
+      max-width: 860px;
+      margin: 0 auto;
+    }
+
+    .chat-textarea {
+      flex: 1;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 12px 16px;
+      color: var(--text);
+      font-size: 14px;
+      line-height: 1.5;
+      resize: none;
+      font-family: inherit;
+      transition: border-color .2s, box-shadow .2s;
+      min-height: 46px;
+      max-height: 120px;
+      overflow-y: auto;
+    }
+    .chat-textarea::placeholder { color: var(--text-dim); }
+    .chat-textarea:focus {
+      border-color: rgba(0,214,143,.4);
+      box-shadow: 0 0 0 3px rgba(0,214,143,.07);
+      outline: none;
+    }
+
+    .send-btn {
+      height: 46px;
+      padding: 0 20px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dim));
+      border: none;
+      border-radius: 12px;
+      color: #fff;
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all .2s;
+      position: relative;
+      overflow: hidden;
+    }
+    .send-btn::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,.1), transparent);
+      opacity: 0; transition: opacity .2s;
+    }
+    .send-btn:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(0,214,143,.35);
+    }
+    .send-btn:hover::after { opacity: 1; }
+    .send-btn:active { transform: translateY(0); box-shadow: none; }
+    .send-btn:disabled { opacity: .45; cursor: not-allowed; }
+
+    /* ── Welcome screen ── */
+    .welcome {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      flex: 1;
+      gap: 28px;
+      padding: 48px 24px;
+    }
+
+    .example-chip {
+      padding: 9px 16px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      color: var(--text-muted);
+      font-size: 13px;
+      cursor: pointer;
+      transition: all .2s;
+      white-space: nowrap;
+    }
+    .example-chip:hover {
+      border-color: rgba(0,214,143,.4);
+      color: var(--primary);
+      background: rgba(0,214,143,.05);
+      transform: translateY(-1px);
+    }
+
+    /* ── Activity panel ── */
+    .activity-panel {
+      width: 340px;
+      flex-shrink: 0;
+      border-left: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      background: rgba(8,16,11,.85);
+      backdrop-filter: blur(8px);
+    }
+
+    .activity-header {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+
+    .activity-feed {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    /* ── Tool / LLM cards ── */
+    .activity-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      animation: cardSlideIn .22s ease-out;
+    }
+
+    @keyframes cardSlideIn {
+      from { opacity: 0; transform: translateX(10px) scale(.98); }
+      to   { opacity: 1; transform: translateX(0) scale(1); }
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+    }
+
+    .status-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      transition: background .3s;
+    }
+
+    .status-dot.running {
+      background: var(--amber);
+      animation: dotPulse 1.2s ease-in-out infinite;
+    }
+    .status-dot.done { background: var(--primary); animation: none; }
+    .status-dot.llm  { background: #818cf8; }
+
+    @keyframes dotPulse {
+      0%,100% { opacity: 1; transform: scale(1); }
+      50%      { opacity: .3; transform: scale(.7); }
+    }
+
+    .card-name {
+      font-family: 'JetBrains Mono', 'Fira Code', monospace;
+      font-size: 12px;
+      font-weight: 600;
+      flex: 1;
+      truncate: true;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+    .card-name.tool  { color: var(--primary); }
+    .card-name.llm   { color: #a5b4fc; }
+
+    .card-status {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: .02em;
+      flex-shrink: 0;
+    }
+    .card-status.running { color: var(--amber); }
+    .card-status.done    { color: var(--primary); }
+    .card-status.llm-active { color: #a5b4fc; }
+
+    .card-sub {
+      padding: 0 12px 8px;
+      font-size: 11px;
+      color: var(--text-dim);
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    .card-output {
+      border-top: 1px solid var(--border-dim);
+      padding: 8px 12px;
+      font-size: 10px;
+      font-family: 'JetBrains Mono', 'Fira Code', monospace;
+      color: var(--text-dim);
+      line-height: 1.5;
+      max-height: 64px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+    }
+
+    /* ── Pulse on active ── */
+    .active-pulse {
+      animation: dotPulse 1.2s ease-in-out infinite;
+      box-shadow: 0 0 8px var(--primary);
+    }
+
+    /* ── Empty state ── */
+    .empty-activity {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      gap: 10px;
+      color: var(--text-dim);
+    }
+
+    /* ── Kbd ── */
+    kbd {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 1px 5px;
+      font-size: 10px;
+      font-family: inherit;
+      color: var(--text-dim);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── Header ─────────────────────────────────────────────────────── -->
+  <header class="header">
+    <div style="display:flex; align-items:center; gap:12px;">
+      <svg width="32" height="32" viewBox="0 0 52 52" fill="none">
+        <path d="M26 3L47 14.5V37.5L26 49L5 37.5V14.5L26 3Z"
+          fill="rgba(0,214,143,.12)" stroke="#00d68f" stroke-width="1.5"/>
+        <path d="M26 11L39 18.5V33.5L26 41L13 33.5V18.5L26 11Z"
+          fill="rgba(0,214,143,.07)" stroke="rgba(0,214,143,.35)" stroke-width="1"/>
+        <circle cx="26" cy="26" r="5" fill="#00d68f"
+          style="filter:drop-shadow(0 0 5px #00d68f)"/>
+      </svg>
+      <div>
+        <div style="display:flex; align-items:baseline; gap:6px;">
+          <span style="color:#fff; font-size:17px; font-weight:700; letter-spacing:-.01em;">otel</span>
+          <span style="color:var(--primary); font-size:17px; font-weight:700;">AI</span>
+        </div>
+        <div style="color:var(--text-dim); font-size:10px; letter-spacing:.12em; text-transform:uppercase; margin-top:-2px;">
+          Revenue Manager
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex; align-items:center; gap:12px;">
+      <div style="display:flex; align-items:center; gap:6px;">
+        <div id="status-dot" style="
+          width:7px; height:7px; border-radius:50%;
+          background:var(--primary);
+          box-shadow: 0 0 6px var(--primary);
+        "></div>
+        <span style="color:var(--text-muted); font-size:13px;">{{ username }}</span>
+      </div>
+      <a href="/logout" style="
+        color:var(--text-dim); font-size:13px;
+        padding:6px 14px;
+        border:1px solid var(--border);
+        border-radius:8px;
+        text-decoration:none;
+        transition:all .2s;
+      "
+      onmouseover="this.style.color='var(--text-muted)'; this.style.borderColor='var(--border-dim)';"
+      onmouseout="this.style.color='var(--text-dim)'; this.style.borderColor='var(--border)';">
+        Sign out
+      </a>
+    </div>
+  </header>
+
+  <!-- ── Main ─────────────────────────────────────────────────────────── -->
+  <div class="main">
+
+    <!-- Chat column -->
+    <div class="chat-col">
+
+      <!-- Messages -->
+      <div class="messages-area" id="messages">
+        <!-- Welcome state -->
+        <div class="welcome" id="welcome">
+          <div style="text-align:center;">
+            <div style="color:var(--text-dim); font-size:11px; letter-spacing:.12em; text-transform:uppercase; margin-bottom:8px;">
+              Good morning
+            </div>
+            <h1 style="color:#fff; font-size:22px; font-weight:600; margin-bottom:6px;">
+              What would you like to review?
+            </h1>
+            <p style="color:var(--text-muted); font-size:13px;">
+              Ask anything about bookings, segments, pickup trends, or revenue performance.
+            </p>
+          </div>
+
+          <div style="display:flex; flex-wrap:wrap; gap:8px; justify-content:center; max-width:640px;">
+            <button class="example-chip" onclick="fillInput(this)">
+              What revenue is on the books for July 2026?
+            </button>
+            <button class="example-chip" onclick="fillInput(this)">
+              Which segments are driving July 2026?
+            </button>
+            <button class="example-chip" onclick="fillInput(this)">
+              What changed in the last 7 days for future stays?
+            </button>
+            <button class="example-chip" onclick="fillInput(this)">
+              What's the group vs transient mix for August 2026?
+            </button>
+            <button class="example-chip" onclick="fillInput(this)">
+              Is OTA dependency a concern for July?
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Input bar -->
+      <div class="input-bar">
+        <div class="input-wrap">
+          <textarea
+            id="chat-input"
+            class="chat-textarea"
+            placeholder="Ask the Revenue Manager…"
+            rows="1"
+            onkeydown="handleKeydown(event)"
+            oninput="autoResize(this)"
+          ></textarea>
+          <button id="send-btn" class="send-btn" onclick="sendMessage()">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <path d="M1 1l12 6-12 6V8.5l8-1.5-8-1.5V1z" fill="white"/>
+            </svg>
+            Send
+          </button>
+        </div>
+        <div style="text-align:center; margin-top:8px; color:var(--text-dim); font-size:11px;">
+          <kbd>Enter</kbd> to send &nbsp;·&nbsp; <kbd>Shift+Enter</kbd> for new line
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Activity panel ───────────────────────────────────────────── -->
+    <aside class="activity-panel">
+      <div class="activity-header">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <div id="activity-indicator" style="
+            width:6px; height:6px; border-radius:50%;
+            background:var(--text-dim);
+            transition:all .3s;
+          "></div>
+          <span style="color:var(--text-muted); font-size:11px; font-weight:600; letter-spacing:.1em; text-transform:uppercase;">
+            Agent Reasoning
+          </span>
+        </div>
+        <span id="activity-label" style="color:var(--text-dim); font-size:11px;">Idle</span>
+      </div>
+
+      <div class="activity-feed" id="activity-feed">
+        <div class="empty-activity" id="activity-empty">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="1.2" opacity=".3">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M12 6v6l4 2"/>
+          </svg>
+          <p style="font-size:12px; text-align:center; line-height:1.5;">
+            Tool calls and<br>reasoning appear here
+          </p>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <input type="hidden" id="thread-id" value="{{ thread_id }}">
+
+  <script>
+    // ── Config ──────────────────────────────────────────────────────
+    marked.setOptions({ breaks: true, gfm: true });
+
+    const threadId   = document.getElementById('thread-id').value;
+    let isStreaming  = false;
+    let currentToolCardEl = null;
+    let pendingLlmCard    = null;
+
+    // ── Helpers ─────────────────────────────────────────────────────
+    function $(id) { return document.getElementById(id); }
+
+    function fillInput(btn) {
+      const ta = $('chat-input');
+      ta.value = btn.textContent.trim();
+      autoResize(ta);
+      ta.focus();
+    }
+
+    function autoResize(el) {
+      el.style.height = 'auto';
+      el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+    }
+
+    function handleKeydown(e) {
+      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+    }
+
+    function scrollMessages() {
+      const el = $('messages');
+      el.scrollTop = el.scrollHeight;
+    }
+
+    function scrollActivity() {
+      const el = $('activity-feed');
+      el.scrollTop = el.scrollHeight;
+    }
+
+    function setActivityActive(on) {
+      const dot   = $('activity-indicator');
+      const label = $('activity-label');
+      if (on) {
+        dot.style.background  = 'var(--primary)';
+        dot.style.boxShadow   = '0 0 8px var(--primary)';
+        dot.classList.add('active-pulse');
+        label.textContent     = 'Running';
+        label.style.color     = 'var(--primary)';
+      } else {
+        dot.style.background  = 'var(--text-dim)';
+        dot.style.boxShadow   = '';
+        dot.classList.remove('active-pulse');
+        label.textContent     = 'Idle';
+        label.style.color     = 'var(--text-dim)';
+      }
+    }
+
+    function escHtml(s) {
+      return String(s)
+        .replace(/&/g,'&amp;')
+        .replace(/</g,'&lt;')
+        .replace(/>/g,'&gt;');
+    }
+
+    function parseToolInput(raw) {
+      try {
+        // Python dict repr → JSON
+        const json = raw
+          .replace(/'/g, '"')
+          .replace(/True/g, 'true')
+          .replace(/False/g, 'false')
+          .replace(/None/g, 'null');
+        const obj = JSON.parse(json);
+        return Object.entries(obj)
+          .map(([k,v]) => `${k}: ${v}`)
+          .join('  ·  ');
+      } catch {
+        return raw.slice(0, 90);
+      }
+    }
+
+    // ── Welcome ─────────────────────────────────────────────────────
+    function hideWelcome() {
+      const w = $('welcome');
+      if (w) w.remove();
+    }
+
+    // ── Messages ────────────────────────────────────────────────────
+    function addUserMessage(text) {
+      hideWelcome();
+      const row = document.createElement('div');
+      row.className = 'msg-row user';
+      row.innerHTML = `<div class="bubble-user">${escHtml(text)}</div>`;
+      $('messages').appendChild(row);
+      scrollMessages();
+    }
+
+    function addTypingIndicator() {
+      const row = document.createElement('div');
+      row.id = 'typing';
+      row.className = 'msg-row agent';
+      row.innerHTML = `
+        <div class="agent-badge">
+          <svg width="12" height="12" viewBox="0 0 52 52" fill="none">
+            <circle cx="26" cy="26" r="10" fill="#00d68f"/>
+          </svg>
+        </div>
+        <div class="typing-dots">
+          <div class="dot"></div>
+          <div class="dot"></div>
+          <div class="dot"></div>
+        </div>`;
+      $('messages').appendChild(row);
+      scrollMessages();
+    }
+
+    function removeTypingIndicator() {
+      const el = $('typing');
+      if (el) el.remove();
+    }
+
+    function addAgentMessage(markdown) {
+      removeTypingIndicator();
+      const row = document.createElement('div');
+      row.className = 'msg-row agent';
+      row.innerHTML = `
+        <div class="agent-badge">
+          <svg width="12" height="12" viewBox="0 0 52 52" fill="none">
+            <circle cx="26" cy="26" r="10" fill="#00d68f"/>
+          </svg>
+        </div>
+        <div class="bubble-agent">
+          <div class="prose">${marked.parse(markdown)}</div>
+        </div>`;
+      $('messages').appendChild(row);
+      scrollMessages();
+    }
+
+    function addErrorMessage(msg) {
+      removeTypingIndicator();
+      const row = document.createElement('div');
+      row.className = 'msg-row agent';
+      row.innerHTML = `
+        <div class="agent-badge" style="border-color:rgba(239,68,68,.3);">
+          <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
+            <circle cx="7" cy="7" r="6" stroke="#ef4444"/>
+            <path d="M7 4v3M7 8.5v.5" stroke="#ef4444" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="bubble-agent error" style="color:#fca5a5;">
+          <strong style="color:#ef4444;">Error</strong><br>${escHtml(msg)}
+        </div>`;
+      $('messages').appendChild(row);
+      scrollMessages();
+    }
+
+    // ── Activity panel ───────────────────────────────────────────────
+    function clearActivity() {
+      const feed = $('activity-feed');
+      feed.innerHTML = `
+        <div class="empty-activity" id="activity-empty">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="1.2" opacity=".3">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M12 6v6l4 2"/>
+          </svg>
+          <p style="font-size:12px; text-align:center; line-height:1.5;">
+            Tool calls and<br>reasoning appear here
+          </p>
+        </div>`;
+      currentToolCardEl = null;
+      pendingLlmCard    = null;
+    }
+
+    function removeEmptyState() {
+      const el = $('activity-empty');
+      if (el) el.remove();
+    }
+
+    function addLlmCard() {
+      removeEmptyState();
+      // Close previous pending LLM card
+      if (pendingLlmCard) completeLlmCard(pendingLlmCard);
+
+      const card = document.createElement('div');
+      card.className = 'activity-card';
+      card.innerHTML = `
+        <div class="card-header">
+          <div class="status-dot llm running"></div>
+          <span class="card-name llm">Claude</span>
+          <span class="card-status llm-active">Reasoning…</span>
+        </div>`;
+      $('activity-feed').appendChild(card);
+      pendingLlmCard = card;
+      scrollActivity();
+    }
+
+    function completeLlmCard(card) {
+      if (!card) return;
+      const dot    = card.querySelector('.status-dot');
+      const status = card.querySelector('.card-status');
+      dot.classList.remove('running');
+      dot.classList.add('done');
+      status.textContent = '✓ Done';
+      status.className   = 'card-status done';
+    }
+
+    function addToolCard(name, inputRaw) {
+      removeEmptyState();
+      // Complete any LLM card that was "reasoning" — it decided to call a tool
+      if (pendingLlmCard) {
+        completeLlmCard(pendingLlmCard);
+        pendingLlmCard = null;
+      }
+
+      const inputStr = parseToolInput(inputRaw);
+      const card = document.createElement('div');
+      card.className = 'activity-card';
+      card.innerHTML = `
+        <div class="card-header">
+          <div class="status-dot running"></div>
+          <span class="card-name tool" title="${escHtml(name)}">${escHtml(name)}</span>
+          <span class="card-status running">Running</span>
+        </div>
+        <div class="card-sub" title="${escHtml(inputStr)}">${escHtml(inputStr)}</div>`;
+      $('activity-feed').appendChild(card);
+      currentToolCardEl = card;
+      scrollActivity();
+    }
+
+    function completeToolCard(output) {
+      if (!currentToolCardEl) return;
+      const dot    = currentToolCardEl.querySelector('.status-dot');
+      const status = currentToolCardEl.querySelector('.card-status');
+      dot.classList.remove('running');
+      dot.classList.add('done');
+      status.textContent = '✓ Done';
+      status.className   = 'card-status done';
+
+      if (output) {
+        // Try to extract a readable preview
+        let preview = output;
+        try {
+          const txt = output.replace(/content='([^']*)'/, '$1');
+          const inner = txt.match(/\{.*\}/s);
+          if (inner) {
+            const obj = JSON.parse(inner[0]
+              .replace(/'/g,'"')
+              .replace(/True/g,'true')
+              .replace(/False/g,'false')
+              .replace(/None/g,'null'));
+            const picked = ['room_revenue','total_revenue','reservation_count',
+              'room_nights','stay_month','new_room_nights','new_total_revenue'];
+            const parts = picked
+              .filter(k => obj[k] !== undefined)
+              .map(k => `${k}: ${typeof obj[k]==='number'
+                ? (obj[k]>999 ? '£'+obj[k].toLocaleString() : obj[k])
+                : obj[k]}`);
+            if (parts.length) preview = parts.join('  ·  ');
+          }
+        } catch {}
+        const div = document.createElement('div');
+        div.className = 'card-output';
+        div.textContent = preview;
+        currentToolCardEl.appendChild(div);
+      }
+
+      currentToolCardEl = null;
+      scrollActivity();
+    }
+
+    // ── SSE parser ───────────────────────────────────────────────────
+    function parseSSE(chunk) {
+      const events = [];
+      // chunk may contain multiple events separated by \n\n
+      const blocks = chunk.split(/\n\n+/);
+      for (const block of blocks) {
+        let type = null;
+        for (const line of block.split('\n')) {
+          if (line.startsWith('event: ')) {
+            type = line.slice(7).trim();
+          } else if (line.startsWith('data: ') && type) {
+            try {
+              events.push({ type, data: JSON.parse(line.slice(6)) });
+            } catch {}
+            type = null;
+          }
+        }
+      }
+      return events;
+    }
+
+    // ── Main send ────────────────────────────────────────────────────
+    async function sendMessage() {
+      if (isStreaming) return;
+      const ta      = $('chat-input');
+      const message = ta.value.trim();
+      if (!message) return;
+
+      isStreaming = true;
+      ta.value    = '';
+      ta.style.height = 'auto';
+      $('send-btn').disabled = true;
+
+      addUserMessage(message);
+      addTypingIndicator();
+      clearActivity();
+      setActivityActive(true);
+
+      try {
+        const resp = await fetch('/api/chat/stream', {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body:    JSON.stringify({ message, thread_id: threadId }),
+        });
+
+        if (!resp.ok) throw new Error(`Server error ${resp.status}`);
+
+        const reader  = resp.body.getReader();
+        const decoder = new TextDecoder();
+        let   buffer  = '';
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          buffer += decoder.decode(value, { stream: true });
+          // split on double newline (SSE event boundary), keep trailing partial
+          const parts = buffer.split('\n\n');
+          buffer      = parts.pop();  // last part may be incomplete
+
+          for (const part of parts) {
+            for (const { type, data } of parseSSE(part + '\n\n')) {
+              handleEvent(type, data);
+            }
+          }
+        }
+
+        // flush any remaining buffer
+        if (buffer.trim()) {
+          for (const { type, data } of parseSSE(buffer)) {
+            handleEvent(type, data);
+          }
+        }
+
+      } catch (err) {
+        addErrorMessage(err.message || 'Something went wrong. Please try again.');
+      } finally {
+        isStreaming = false;
+        $('send-btn').disabled = false;
+        setActivityActive(false);
+        if (pendingLlmCard) { completeLlmCard(pendingLlmCard); pendingLlmCard = null; }
+      }
+    }
+
+    function handleEvent(type, data) {
+      if (type === 'llm_start') {
+        addLlmCard();
+      } else if (type === 'tool_start') {
+        addToolCard(data.name || 'tool', data.input || '');
+      } else if (type === 'tool_done') {
+        completeToolCard(data.output || '');
+      } else if (type === 'answer') {
+        addAgentMessage(data.content || '');
+      } else if (type === 'error') {
+        addErrorMessage(data.content || 'Unknown error');
+      } else if (type === 'done') {
+        setActivityActive(false);
+        if (pendingLlmCard) { completeLlmCard(pendingLlmCard); pendingLlmCard = null; }
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>otel AI — Sign In</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      --primary: #00d68f;
+      --bg: #06100d;
+      --surface: #0d1f18;
+      --border: #1c3025;
+      --text: #ddf0e6;
+      --muted: #5a8a70;
+      --dim: #3a5a48;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      background: var(--bg);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      padding: 1rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Animated grid */
+    .grid-bg::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0,214,143,.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,214,143,.04) 1px, transparent 1px);
+      background-size: 48px 48px;
+      animation: gridDrift 20s linear infinite;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    @keyframes gridDrift {
+      0%   { background-position: 0 0; }
+      100% { background-position: 48px 48px; }
+    }
+
+    /* Radial glow behind card */
+    .glow-orb {
+      position: fixed;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, rgba(0,214,143,.06) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .card {
+      position: relative;
+      z-index: 1;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 40px;
+      width: 100%;
+      max-width: 420px;
+      box-shadow:
+        0 0 0 1px rgba(0,214,143,.08),
+        0 24px 64px rgba(0,0,0,.6),
+        0 0 80px rgba(0,214,143,.04);
+    }
+
+    .logo-hex {
+      animation: logoFloat 4s ease-in-out infinite;
+    }
+
+    @keyframes logoFloat {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-4px); }
+    }
+
+    .field-label {
+      display: block;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .field-input {
+      width: 100%;
+      background: rgba(0,214,143,.03);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 11px 14px;
+      color: var(--text);
+      font-size: 14px;
+      transition: border-color .2s, box-shadow .2s;
+      outline: none;
+    }
+
+    .field-input::placeholder { color: var(--dim); }
+
+    .field-input:focus {
+      border-color: rgba(0,214,143,.45);
+      box-shadow: 0 0 0 3px rgba(0,214,143,.08);
+    }
+
+    .btn-login {
+      width: 100%;
+      padding: 12px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #00d68f, #00a86b);
+      color: #fff;
+      font-weight: 700;
+      font-size: 14px;
+      letter-spacing: .02em;
+      cursor: pointer;
+      transition: all .2s;
+      border: none;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-login::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,.08), transparent);
+      opacity: 0;
+      transition: opacity .2s;
+    }
+
+    .btn-login:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 24px rgba(0,214,143,.35);
+    }
+
+    .btn-login:hover::after { opacity: 1; }
+    .btn-login:active { transform: translateY(0); box-shadow: none; }
+
+    .error-box {
+      background: rgba(239,68,68,.08);
+      border: 1px solid rgba(239,68,68,.25);
+      border-radius: 8px;
+      padding: 10px 14px;
+      color: #fca5a5;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+  </style>
+</head>
+<body class="grid-bg">
+  <div class="glow-orb"></div>
+
+  <div class="card">
+    <!-- Logo -->
+    <div class="text-center mb-8">
+      <div class="inline-block logo-hex mb-3">
+        <svg width="52" height="52" viewBox="0 0 52 52" fill="none">
+          <path d="M26 3L47 14.5V37.5L26 49L5 37.5V14.5L26 3Z"
+            fill="rgba(0,214,143,.1)" stroke="#00d68f" stroke-width="1.5"/>
+          <path d="M26 11L39 18.5V33.5L26 41L13 33.5V18.5L26 11Z"
+            fill="rgba(0,214,143,.07)" stroke="rgba(0,214,143,.4)" stroke-width="1"/>
+          <circle cx="26" cy="26" r="5" fill="#00d68f"
+            style="filter: drop-shadow(0 0 6px #00d68f)"/>
+        </svg>
+      </div>
+      <div class="flex items-center justify-center gap-2 mb-1">
+        <span class="text-white text-2xl font-bold tracking-tight">otel</span>
+        <span style="color: var(--primary); font-size: 1.5rem; font-weight: 700;">AI</span>
+      </div>
+      <p style="color: var(--dim); font-size: 11px; letter-spacing: .12em; text-transform: uppercase;">
+        Revenue Manager · Secure Access
+      </p>
+    </div>
+
+    {% if error %}
+    <div class="error-box mb-5">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+        <circle cx="7" cy="7" r="6.5" stroke="#fca5a5"/>
+        <path d="M7 4v3M7 9.5v.5" stroke="#fca5a5" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+      {{ error }}
+    </div>
+    {% endif %}
+
+    <form method="post" action="/login" class="space-y-5">
+      <div>
+        <label class="field-label" for="username">Username</label>
+        <input id="username" type="text" name="username" required autofocus
+          class="field-input" placeholder="Enter your username">
+      </div>
+      <div>
+        <label class="field-label" for="password">Password</label>
+        <input id="password" type="password" name="password" required
+          class="field-input" placeholder="Enter your password">
+      </div>
+      <button type="submit" class="btn-login mt-2">
+        Sign In &rarr;
+      </button>
+    </form>
+
+    <div style="margin-top: 28px; padding-top: 20px; border-top: 1px solid var(--border);">
+      <div class="flex items-center gap-3">
+        <div class="w-1.5 h-1.5 rounded-full" style="background: var(--primary); box-shadow: 0 0 6px var(--primary);"></div>
+        <span style="color: var(--dim); font-size: 11px;">All systems operational</span>
+        <span style="color: var(--dim); font-size: 11px; margin-left: auto;">v2.0</span>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
