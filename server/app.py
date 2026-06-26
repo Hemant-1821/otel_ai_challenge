@@ -162,7 +162,15 @@ async def root():
 
 @app.get("/health")
 async def health():
-    return {"status": "ok", "service": "otel-rm-agent"}
+    proof_path = Path(__file__).parent.parent / "etl" / "LOAD_PROOF.json"
+    with proof_path.open() as f:
+        proof = json.load(f)
+    return {
+        "db_fingerprint": proof["reservation_stay_status_sha256"],
+        "dataset_revision": proof["dataset_revision"],
+        "row_hash": proof["row_hash"],
+        "financial_status_posted_only_rows": proof["financial_status_posted_only_rows"],
+    }
 
 
 @app.get("/login", response_class=HTMLResponse)
